@@ -29,7 +29,9 @@ jobs:
             echo "::error::DEVGIST_APP_URL(variable) 또는 CRON_SECRET(secret) 미설정"
             exit 1
           fi
+          APP_URL="${APP_URL%/}" # 끝 슬래시 제거 ("//api/..." → 308 리다이렉트 방지)
           echo "POST ${APP_URL}/api/cron/poll"
-          curl -fsS -X POST "${APP_URL}/api/cron/poll" \
+          # -L: 혹시 모를 리다이렉트 추적(같은 호스트라 Authorization 유지), -f: 4xx/5xx면 실패 처리
+          curl -fsSL -X POST "${APP_URL}/api/cron/poll" \
             -H "Authorization: Bearer ${CRON_SECRET}" \
             -w "\nHTTP %{http_code}\n"
