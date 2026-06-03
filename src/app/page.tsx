@@ -21,7 +21,10 @@ export default async function HomePage() {
     <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
       {articles.map((article) => (
         <li key={article.id}>
-          <Link href={`/article/${article.id}`} className="group block py-4">
+          <Link
+            href={`/article/${article.id}`}
+            className={`group block py-4 ${article.read?.isRead ? 'opacity-55' : ''}`}
+          >
             <div className="flex items-center gap-2 text-xs text-zinc-500">
               <span className="font-medium text-zinc-600 dark:text-zinc-400">
                 {article.feed.title}
@@ -35,8 +38,13 @@ export default async function HomePage() {
                 </>
               )}
             </div>
-            <h2 className="mt-1 font-semibold leading-snug group-hover:underline">
-              {article.title}
+            <h2 className="mt-1 flex items-start gap-1.5 font-semibold leading-snug group-hover:underline">
+              {article.read?.bookmarked && (
+                <span className="text-amber-500" aria-label="북마크됨">
+                  ★
+                </span>
+              )}
+              <span>{article.title}</span>
             </h2>
             {article.summary && (
               <p className="mt-1 line-clamp-2 text-sm text-zinc-500">{article.summary}</p>

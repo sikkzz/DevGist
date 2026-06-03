@@ -23,14 +23,18 @@ export const getArticleList = cache(async () => {
       publishedAt: true,
       createdAt: true,
       feed: { select: { title: true } },
+      read: { select: { isRead: true, bookmarked: true } },
     },
   });
 });
 
-/** 글 상세 (본문 포함 + 피드 정보). 없으면 null. */
+/** 글 상세 (본문 포함 + 피드 + 읽음/북마크 상태). 없으면 null. */
 export const getArticleById = cache(async (id: string) => {
   return prisma.article.findUnique({
     where: { id },
-    include: { feed: { select: { title: true, siteUrl: true } } },
+    include: {
+      feed: { select: { title: true, siteUrl: true } },
+      read: { select: { isRead: true, bookmarked: true } },
+    },
   });
 });

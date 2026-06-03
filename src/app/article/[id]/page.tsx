@@ -6,6 +6,8 @@ import { formatDate } from '@/lib/format';
 import { sanitizeArticleHtml } from '@/lib/sanitize';
 
 import styles from './article-content.module.css';
+import { BookmarkButton } from './bookmark-button';
+import { MarkRead } from './mark-read';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,6 +19,9 @@ export default async function ArticlePage({ params }: PageProps<'/article/[id]'>
 
   return (
     <article>
+      {/* 마운트 시 읽음 처리 (렌더 없음) */}
+      <MarkRead articleId={article.id} />
+
       <Link href="/" className="text-sm text-zinc-500 hover:underline">
         ← 목록
       </Link>
@@ -40,14 +45,20 @@ export default async function ArticlePage({ params }: PageProps<'/article/[id]'>
             </>
           )}
         </div>
-        <a
-          href={article.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2 inline-block text-sm text-blue-600 hover:underline dark:text-blue-400"
-        >
-          원문 보기 ↗
-        </a>
+        <div className="mt-3 flex items-center gap-3">
+          <BookmarkButton
+            articleId={article.id}
+            initialBookmarked={article.read?.bookmarked ?? false}
+          />
+          <a
+            href={article.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+          >
+            원문 보기 ↗
+          </a>
+        </div>
       </header>
 
       {article.content ? (
