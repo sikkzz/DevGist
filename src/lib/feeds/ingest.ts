@@ -1,23 +1,9 @@
 import { prisma } from '@/lib/prisma';
 
-import { EXTRACT_CONCURRENCY } from './constants';
+import { cleanText, EXTRACT_CONCURRENCY } from './constants';
+import { mapPool } from './concurrency';
 import { resolveContent } from './extract';
 import type { ParsedItem } from './parse';
-
-/** 동시 실행 수를 제한하며 배열을 매핑한다 (외부 의존성 없음). */
-async function mapPool<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
-  const results = new Array<R>(items.length);
-  let cursor = 0;
-  async function worker() {
-    while (cursor < items.length) {
-      const index = cursor++;
-      results[index] = await fn(items[index]);
-    }
-  }
-  const workers = Array.from({ length: Math.min(limit, items.length) }, worker);
-  await Promise.all(workers);
-  return results;
-}
 
 export interface IngestResult {
   /** 새로 적재된 글 수 */
@@ -52,21 +38,24 @@ export async function ingestFeed(feedId: string, items: ParsedItem[]): Promise<I
         data: {
           feedId,
           guid: item.guid,
-          title: item.title,
+          // 텍스트 컬럼은 NUL 등 제어문자 제거 (일부 피드/추출물이 INSERT를 깨뜨림)
+          title: cleanText(item.title) ?? '(제목 없음)',
           link: item.link,
-          author: item.author ?? null,
-          summary: item.summary ?? null,
-          content,
+          author: cleanText(item.author),
+          summary: cleanText(item.summary),
+          content: cleanText(content),
           contentExtracted,
           publishedAt: item.publishedAt ?? null,
         },
       });
       return 'created' as const;
     } catch (err) {
-      // unique 충돌(경쟁)이면 스킵, 그 외는 실패
-      return (err as { code?: string }).code === 'P2002'
-        ? ('skipped' as const)
-        : ('failed' as const);
+      // unique 충돌(경쟁)이면 스킵, 그 외는 실패 — 원인 추적용 로깅
+      if ((err as { code?: string }).code === 'P2002') return 'skipped' as const;
+      console.error(
+        `[ingest] create 실패 feed=${feedId} guid=${item.guid}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      return 'failed' as const;
     }
   });
 
