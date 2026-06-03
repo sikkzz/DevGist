@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+    # docs/**, *.md 변경만 있는 PR엔 CI 안 돔 (분 절약)
+    paths-ignore: ['docs/**', '**.md', '.gitignore', 'LICENSE']
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+    paths-ignore: ['docs/**', '**.md', '.gitignore', 'LICENSE']
+
+# 같은 PR/브랜치에 새 푸시 들어오면 이전 실행 자동 취소 (CI 분 절약)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Lint + Typecheck + Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+        env:
+          # 빌드 타임에 DB 접속 안 하도록 더미 값 (Prisma client generate만 필요)
+          DATABASE_URL: 'postgresql://user:pass@localhost:5432/devgist'

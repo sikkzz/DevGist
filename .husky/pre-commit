@@ -1,0 +1,3 @@
+# pre-commit: staged 파일만 lint + format 자동 적용
+# 룰은 .lintstagedrc.cjs 참고
+npx lint-staged

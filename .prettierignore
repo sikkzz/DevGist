@@ -1,0 +1,22 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+.next
+build
+dist
+
+# Lock files (생성물, 손으로 만지지 않음)
+pnpm-lock.yaml
+
+# Prisma 생성물
+src/generated
+
+# Logs
+*.log
+
+# Misc
+*.tsbuildinfo
+coverage
+next-env.d.ts
