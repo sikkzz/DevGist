@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Feed {
+  id            String    @id @default(cuid())
+  title         String
+  url           String    @unique
+  siteUrl       String?
+  description   String?
+  category      String?
+  active        Boolean   @default(true)
+  lastFetchedAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  articles Article[]
+
+  @@map("feeds")
+}
+
+model Article {
+  id               String   @id @default(cuid())
+  feedId           String
+  guid             String
+  title            String
+  link             String
+  author           String?
+  summary          String?
+  content          String?
+  contentExtracted Boolean  @default(false)
+  thumbnailUrl     String?
+  publishedAt      DateTime?
+  createdAt        DateTime @default(now())
+
+  feed Feed  @relation(fields: [feedId], references: [id], onDelete: Cascade)
+  read Read?
+
+  @@unique([feedId, guid])
+  @@index([publishedAt])
+  @@map("articles")
+}
+
+model Read {
+  id         String    @id @default(cuid())
+  articleId  String    @unique
+  isRead     Boolean   @default(false)
+  bookmarked Boolean   @default(false)
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@map("reads")
+}
