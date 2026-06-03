@@ -1,0 +1,35 @@
+name: Poll RSS feeds
+
+# 배포된 앱의 /api/cron/poll을 주기적으로 호출해 새 글을 수집 (ADR-0006).
+# 필요 설정:
+#   - Variables → DEVGIST_APP_URL : 배포 베이스 URL (예: https://devgist.vercel.app)
+#   - Secrets   → CRON_SECRET     : 앱의 CRON_SECRET과 동일 값
+on:
+  schedule:
+    # 2시간마다 (UTC). Actions cron은 정시 보장 X, 지연 허용(ADR-0006).
+    - cron: '0 */2 * * *'
+  workflow_dispatch: # Actions 탭에서 수동 트리거
+
+# 이전 폴링 진행 중이면 대기 (중복 호출 방지)
+concurrency:
+  group: poll-feeds
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    name: Trigger feed poll
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call /api/cron/poll
+        env:
+          APP_URL: ${{ vars.DEVGIST_APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [[ -z "$APP_URL" || -z "$CRON_SECRET" ]]; then
+            echo "::error::DEVGIST_APP_URL(variable) 또는 CRON_SECRET(secret) 미설정"
+            exit 1
+          fi
+          echo "POST ${APP_URL}/api/cron/poll"
+          curl -fsS -X POST "${APP_URL}/api/cron/poll" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -w "\nHTTP %{http_code}\n"
