@@ -6,8 +6,9 @@ name: Poll RSS feeds
 #   - Secrets   → CRON_SECRET     : 앱의 CRON_SECRET과 동일 값
 on:
   schedule:
-    # 2시간마다 (UTC). Actions cron은 정시 보장 X, 지연 허용(ADR-0006).
-    - cron: '0 */2 * * *'
+    # 매일 08:00 KST = 23:00 UTC (GitHub Actions cron은 UTC 기준).
+    # Actions cron은 정시 보장 X, 수 분 지연 가능(ADR-0006 — 수집은 지연 관대).
+    - cron: '0 23 * * *'
   workflow_dispatch: # Actions 탭에서 수동 트리거
 
 # 이전 폴링 진행 중이면 대기 (중복 호출 방지)
