@@ -1,5 +1,5 @@
 import { Readability } from '@mozilla/readability';
-import { JSDOM } from 'jsdom';
+import { parseHTML } from 'linkedom';
 
 import {
   FETCH_TIMEOUT_MS,
@@ -52,9 +52,14 @@ async function tryExtract(url: string): Promise<string | null> {
     if (!res.ok) return null;
 
     const html = await res.text();
-    // jsdom은 기본적으로 스크립트/외부 리소스를 실행/로드하지 않음 (안전)
-    const dom = new JSDOM(html, { url });
-    const article = new Readability(dom.window.document).parse();
+    // linkedom엔 jsdom의 { url } 옵션이 없어, <base>를 주입해 상대경로 URL을 절대화한다
+    // (Readability가 document.baseURI로 이미지/링크를 절대 경로로 보정 — ADR-0001 이미지 보존).
+    const baseTag = `<base href="${url}">`;
+    const withBase = /<head[^>]*>/i.test(html)
+      ? html.replace(/<head([^>]*)>/i, `<head$1>${baseTag}`)
+      : `${baseTag}${html}`;
+    const { document } = parseHTML(withBase);
+    const article = new Readability(document).parse();
     return article?.content ?? null;
   } catch {
     return null;

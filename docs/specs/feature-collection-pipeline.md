@@ -66,14 +66,14 @@ flowchart TD
 
 ## 7. 모듈 설계
 
-| 파일                             | 책임                                                                                                                         |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `src/lib/feeds/parse.ts`         | `rss-parser`로 피드 fetch+파싱 → 정규화된 `ParsedItem[]` (guid/title/link/author/publishedAt/contentEncoded/summary)         |
-| `src/lib/feeds/extract.ts`       | `content:encoded` 충분성 판정 + 부족 시 `@mozilla/readability`(jsdom) 추출 + fallback 판정 → `{ content, contentExtracted }` |
-| `src/lib/feeds/ingest.ts`        | 한 피드의 item들을 `(feedId,guid)` 기준 `createMany(skipDuplicates)`로 적재, `lastFetchedAt` 갱신                            |
-| `src/lib/feeds/poll.ts`          | active 피드 순회·격리 오케스트레이션 → 피드별 요약                                                                           |
-| `src/app/api/cron/poll/route.ts` | Bearer 토큰 인증 → `poll()` 호출 → 요약 응답. `runtime='nodejs'`, `dynamic='force-dynamic'`                                  |
-| `scripts/seed-feeds.mjs`         | (임시) 초기 피드 목록 upsert                                                                                                 |
+| 파일                             | 책임                                                                                                                                                                   |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/feeds/parse.ts`         | `rss-parser`로 피드 fetch+파싱 → 정규화된 `ParsedItem[]` (guid/title/link/author/publishedAt/contentEncoded/summary)                                                   |
+| `src/lib/feeds/extract.ts`       | `content:encoded` 충분성 판정 + 부족 시 `@mozilla/readability`(linkedom) 추출 + fallback 판정 → `{ content, contentExtracted }`. `<base>` 주입으로 상대경로 URL 절대화 |
+| `src/lib/feeds/ingest.ts`        | 한 피드의 item들을 `(feedId,guid)` 기준 `createMany(skipDuplicates)`로 적재, `lastFetchedAt` 갱신                                                                      |
+| `src/lib/feeds/poll.ts`          | active 피드 순회·격리 오케스트레이션 → 피드별 요약                                                                                                                     |
+| `src/app/api/cron/poll/route.ts` | Bearer 토큰 인증 → `poll()` 호출 → 요약 응답. `runtime='nodejs'`, `dynamic='force-dynamic'`                                                                            |
+| `scripts/seed-feeds.mjs`         | (임시) 초기 피드 목록 upsert                                                                                                                                           |
 
 ## 8. 핵심 휴리스틱 (튜닝 대상)
 
@@ -97,7 +97,7 @@ flowchart TD
 ## 10. 미정 사안 (Open Questions)
 
 - 임계값(600/400) 실제 피드 보고 재조정 필요.
-- readability + jsdom 번들 크기 vs Vercel Hobby 함수 한도(50MB) — 초과 시 `linkedom`으로 교체 검토.
+- ~~readability + jsdom 번들~~ → **linkedom으로 교체 완료**. jsdom 29가 끌어오는 `html-encoding-sniffer@6 → @exodus/bytes`(ESM 전용)를 Vercel 서버리스 CJS 컨텍스트에서 `require()`하다 `ERR_REQUIRE_ESM`로 500. linkedom은 가볍고 ESM/CJS 친화적이라 해결 + 콜드스타트 개선.
 - 폴링 주기(cron) — 배포 단계에서 결정.
 - **거대 인라인 자산**: 일부 글이 본문 끝에 base64 인라인 이미지/폰트(수 MB)를 품어 단일 `content`가 4.7MB까지 커짐. ADR-0001(무손실) 때문에 임의 제거는 보류. Neon 무료 0.5GB 한도 압박 시 → 거대 `data:` URI만 원격 URL/프록시로 치환하는 정책 검토 (요약 아님, 무손실 유지).
 - 클라이언트 disconnect 시 Next dev는 핸들러를 중단하지 않음(끝까지 실행). 운영(Vercel)은 `maxDuration`(60s)에서 강제 종료되지만, 파이프라인이 멱등이라 다음 폴링이 이어받음.
