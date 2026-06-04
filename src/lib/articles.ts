@@ -1,19 +1,17 @@
 import { cache } from 'react';
 
+import { type ArticleCard, PAGE_SIZE } from '@/lib/article-types';
 import { prisma } from '@/lib/prisma';
 
-/** 목록 1회 노출 상한 (페이지네이션 도입 전 임시) */
-const LIST_LIMIT = 100;
-
 /**
- * 최신순 글 목록. publishedAt 우선(null은 뒤로), 그다음 createdAt.
- * 본문(content)은 무거우니 목록에선 제외한다.
- * React.cache로 같은 요청 내 중복 호출을 메모이즈.
+ * 최신순 글 목록 한 묶음(무한 스크롤용). publishedAt 우선(null은 뒤로), 그다음 createdAt.
+ * 본문(content)은 무거우니 목록에선 제외하고, 카드용으로 평탄화해 반환한다.
  */
-export const getArticleList = cache(async () => {
-  return prisma.article.findMany({
+export async function getArticles(skip = 0, take: number = PAGE_SIZE): Promise<ArticleCard[]> {
+  const rows = await prisma.article.findMany({
     orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }],
-    take: LIST_LIMIT,
+    skip,
+    take,
     select: {
       id: true,
       title: true,
@@ -21,12 +19,22 @@ export const getArticleList = cache(async () => {
       summary: true,
       author: true,
       publishedAt: true,
-      createdAt: true,
       feed: { select: { title: true } },
       read: { select: { isRead: true, bookmarked: true } },
     },
   });
-});
+  return rows.map((a) => ({
+    id: a.id,
+    title: a.title,
+    link: a.link,
+    summary: a.summary,
+    author: a.author,
+    publishedAt: a.publishedAt,
+    feedTitle: a.feed.title,
+    isRead: a.read?.isRead ?? false,
+    bookmarked: a.read?.bookmarked ?? false,
+  }));
+}
 
 /** 글 상세 (본문 포함 + 피드 + 읽음/북마크 상태). 없으면 null. */
 export const getArticleById = cache(async (id: string) => {
