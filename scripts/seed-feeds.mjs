@@ -5,8 +5,9 @@
 // 한국 빅테크 + 유명 IT 플랫폼 스타트업 기술블로그.
 // 전부 fetch 검증 완료(awesome-devblog db_community.yml 등 큐레이션 기반).
 // 정직한 UA로 접근 가능한 공개 RSS만 — 차단 피드는 존중해 제외:
-//   403(봇 차단): 우아한형제들 신블로그·카카오뱅크·컬리
+//   403(봇 차단): 우아한형제들 신블로그(woowabros 구블로그는 사용)·컬리
 //   406(UA 거부): 네이버 D2·G마켓·GS Retail (브라우저 UA면 가능하나 정직 UA 유지 방침상 제외)
+// (카카오뱅크는 /rss는 403이나 카테고리 index.xml로 수집 가능 → 포함)
 
 import 'dotenv/config';
 import { randomUUID } from 'node:crypto';
