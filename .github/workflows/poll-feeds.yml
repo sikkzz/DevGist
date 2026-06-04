@@ -6,10 +6,11 @@ name: Poll RSS feeds
 #   - Secrets   → CRON_SECRET     : 앱의 CRON_SECRET과 동일 값
 on:
   schedule:
-    # 매일 08:00·18:00 KST = 23:00·09:00 UTC (GitHub Actions cron은 UTC 기준).
-    # Actions cron은 정시 보장 X, 수 분 지연 가능(ADR-0006 — 수집은 지연 관대).
-    - cron: '0 23 * * *' # 08:00 KST
-    - cron: '0 9 * * *' # 18:00 KST
+    # 읽는 시각(09:00·19:00 KST)보다 2시간 앞당겨 예약 — Actions cron 지연(보통 수 분,
+    # 가끔 1~2시간) 흡수용 안전 버퍼. 정각(:00)은 전역 혼잡이라 :40분으로 회피.
+    # 06:40 KST = 21:40 UTC(전일), 16:40 KST = 07:40 UTC. (ADR-0006 — 수집은 지연 관대)
+    - cron: '40 21 * * *' # 06:40 KST (아침 9시 읽기용)
+    - cron: '40 7 * * *' # 16:40 KST (저녁 7시 읽기용)
   workflow_dispatch: # Actions 탭에서 수동 트리거
 
 # 이전 폴링 진행 중이면 대기 (중복 호출 방지)

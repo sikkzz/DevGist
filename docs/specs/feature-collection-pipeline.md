@@ -98,7 +98,7 @@ flowchart TD
 
 - 임계값(600/400) 실제 피드 보고 재조정 필요.
 - ~~readability + jsdom 번들~~ → **linkedom으로 교체 완료**. jsdom 29가 끌어오는 `html-encoding-sniffer@6 → @exodus/bytes`(ESM 전용)를 Vercel 서버리스 CJS 컨텍스트에서 `require()`하다 `ERR_REQUIRE_ESM`로 500. linkedom은 가볍고 ESM/CJS 친화적이라 해결 + 콜드스타트 개선.
-- ~~폴링 주기(cron)~~ → **매일 08:00·18:00 KST(= 23:00·09:00 UTC) 2회**로 결정 (출퇴근 리더 — 아침/저녁 통근 전 수신). dedup이 있어 빈도 증가가 저장/부하에 영향 거의 없음.
+- ~~폴링 주기(cron)~~ → **매일 06:40·16:40 KST(= 21:40·07:40 UTC) 2회**로 결정. 읽는 시각(09:00·19:00 KST)보다 2시간 앞당겨 Actions cron 지연(가끔 1~2시간) 흡수, 정각(:00) 혼잡 회피(:40분). dedup이 있어 빈도 영향 거의 없음.
 - **거대 인라인 자산**: 일부 글이 본문 끝에 base64 인라인 이미지/폰트(수 MB)를 품어 단일 `content`가 4.7MB까지 커짐. ADR-0001(무손실) 때문에 임의 제거는 보류. Neon 무료 0.5GB 한도 압박 시 → 거대 `data:` URI만 원격 URL/프록시로 치환하는 정책 검토 (요약 아님, 무손실 유지).
 - 클라이언트 disconnect 시 Next dev는 핸들러를 중단하지 않음(끝까지 실행). 운영(Vercel)은 `maxDuration`(60s)에서 강제 종료되지만, 파이프라인이 멱등이라 다음 폴링이 이어받음.
 
