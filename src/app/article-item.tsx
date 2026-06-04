@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import type { ArticleCard } from '@/lib/article-types';
+import { type ArticleCard, TOPIC_LABELS } from '@/lib/article-types';
 import { formatDate } from '@/lib/format';
 
 /** 목록 카드 1개 (초기 SSR·무한스크롤 추가분 공용 프리젠테이션). */
@@ -32,6 +32,20 @@ export function ArticleItem({ article }: { article: ArticleCard }) {
         </h2>
         {article.summary && (
           <p className="mt-1 line-clamp-2 text-sm text-zinc-500">{article.summary}</p>
+        )}
+        {article.topics.filter((t) => t !== 'etc').length > 0 && (
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            {article.topics
+              .filter((t) => t !== 'etc')
+              .map((t) => (
+                <span
+                  key={t}
+                  className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
+                >
+                  {TOPIC_LABELS[t] ?? t}
+                </span>
+              ))}
+          </div>
         )}
       </Link>
     </li>

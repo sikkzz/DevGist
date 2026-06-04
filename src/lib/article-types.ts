@@ -3,10 +3,30 @@
 /** 무한 스크롤 한 묶음 크기 */
 export const PAGE_SIZE = 30;
 
-/** 피드 category 키 → 표시 라벨. 미정의 키는 키 그대로 노출(폴백). */
-export const CATEGORY_LABELS: Record<string, string> = {
-  bigtech: '빅테크',
-  startup: '스타트업',
+/** 주제 탭 순서 (ADR-0008). 'etc' = 미분류. */
+export const TOPICS = [
+  'frontend',
+  'backend',
+  'infra',
+  'mobile',
+  'ai',
+  'data',
+  'qa',
+  'security',
+  'etc',
+] as const;
+
+/** 주제 키 → 표시 라벨. */
+export const TOPIC_LABELS: Record<string, string> = {
+  frontend: '프론트엔드',
+  backend: '백엔드',
+  infra: '인프라/DevOps',
+  mobile: '모바일',
+  ai: 'AI/ML',
+  data: '데이터',
+  qa: 'QA/테스트',
+  security: '보안',
+  etc: '기타',
 };
 
 /** 목록 카드용 평탄화된 글 요약 (본문 제외) */
@@ -18,6 +38,7 @@ export interface ArticleCard {
   author: string | null;
   publishedAt: Date | null;
   feedTitle: string;
+  topics: string[];
   isRead: boolean;
   bookmarked: boolean;
 }

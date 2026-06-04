@@ -13,10 +13,10 @@ import { loadMoreArticles } from './articles-actions';
  */
 export function InfiniteArticleList({
   initial,
-  category,
+  topic,
 }: {
   initial: ArticleCard[];
-  category?: string;
+  topic?: string;
 }) {
   const [items, setItems] = useState<ArticleCard[]>(initial);
   const [hasMore, setHasMore] = useState(initial.length === PAGE_SIZE);
@@ -32,7 +32,7 @@ export function InfiniteArticleList({
       (entries) => {
         if (!entries[0].isIntersecting || isPending) return;
         startTransition(async () => {
-          const next = await loadMoreArticles(items.length, category);
+          const next = await loadMoreArticles(items.length, topic);
           setItems((prev) => [...prev, ...next]);
           if (next.length < PAGE_SIZE) setHasMore(false);
         });
@@ -41,7 +41,7 @@ export function InfiniteArticleList({
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [hasMore, isPending, items.length, category]);
+  }, [hasMore, isPending, items.length, topic]);
 
   return (
     <>

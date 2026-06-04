@@ -9,11 +9,11 @@ import { prisma } from '@/lib/prisma';
  */
 export async function getArticles(
   skip = 0,
-  category?: string,
+  topic?: string,
   take: number = PAGE_SIZE,
 ): Promise<ArticleCard[]> {
   const rows = await prisma.article.findMany({
-    where: category ? { feed: { category } } : undefined,
+    where: topic ? { topics: { has: topic } } : undefined,
     orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }],
     skip,
     take,
@@ -24,6 +24,7 @@ export async function getArticles(
       summary: true,
       author: true,
       publishedAt: true,
+      topics: true,
       feed: { select: { title: true } },
       read: { select: { isRead: true, bookmarked: true } },
     },
@@ -36,20 +37,10 @@ export async function getArticles(
     author: a.author,
     publishedAt: a.publishedAt,
     feedTitle: a.feed.title,
+    topics: a.topics,
     isRead: a.read?.isRead ?? false,
     bookmarked: a.read?.bookmarked ?? false,
   }));
-}
-
-/** 활성 피드에 실제 존재하는 카테고리 목록 (필터 탭용). */
-export async function getCategories(): Promise<string[]> {
-  const rows = await prisma.feed.findMany({
-    where: { active: true, category: { not: null } },
-    select: { category: true },
-    distinct: ['category'],
-    orderBy: { category: 'asc' },
-  });
-  return rows.map((r) => r.category).filter((c): c is string => c != null);
 }
 
 /** 글 상세 (본문 포함 + 피드 + 읽음/북마크 상태). 없으면 null. */
