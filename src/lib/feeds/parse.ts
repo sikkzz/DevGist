@@ -18,6 +18,8 @@ export interface ParsedItem {
   /** content:encoded 등에서 받은 원문 HTML (있으면 무손실 그대로) */
   contentEncoded?: string;
   publishedAt?: Date;
+  /** 피드가 제공한 <category> 태그 (주제 분류 신호, ADR-0008) */
+  categories: string[];
 }
 
 export interface ParsedFeed {
@@ -62,6 +64,13 @@ export async function parseFeed(url: string): Promise<ParsedFeed> {
       // 명시 매핑된 content:encoded 우선, 없으면 rss-parser 기본 content(Atom content 포함)
       contentEncoded: item.contentEncoded ?? item.content ?? undefined,
       publishedAt: toDate(item.isoDate ?? item.pubDate),
+      categories: ((item.categories ?? []) as unknown[])
+        .map((c) => {
+          if (typeof c === 'string') return c.trim();
+          const o = c as { _?: string; name?: string };
+          return (o._ ?? o.name ?? '').trim();
+        })
+        .filter(Boolean),
     });
   }
 

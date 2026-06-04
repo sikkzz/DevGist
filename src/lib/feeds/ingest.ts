@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 
+import { classifyTopics } from './classify';
 import { cleanText, EXTRACT_CONCURRENCY } from './constants';
 import { mapPool } from './concurrency';
 import { resolveContent } from './extract';
@@ -45,6 +46,11 @@ export async function ingestFeed(feedId: string, items: ParsedItem[]): Promise<I
           summary: cleanText(item.summary),
           content: cleanText(content),
           contentExtracted,
+          topics: classifyTopics({
+            title: item.title,
+            summary: item.summary,
+            categories: item.categories,
+          }),
           publishedAt: item.publishedAt ?? null,
         },
       });

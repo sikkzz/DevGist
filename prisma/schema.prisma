@@ -38,6 +38,7 @@ model Article {
   content          String?
   contentExtracted Boolean  @default(false)
   thumbnailUrl     String?
+  topics           String[] @default([]) // 주제 태그 (ADR-0008, 규칙 기반 멀티라벨)
   publishedAt      DateTime?
   createdAt        DateTime @default(now())
 
