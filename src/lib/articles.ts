@@ -7,8 +7,13 @@ import { prisma } from '@/lib/prisma';
  * 최신순 글 목록 한 묶음(무한 스크롤용). publishedAt 우선(null은 뒤로), 그다음 createdAt.
  * 본문(content)은 무거우니 목록에선 제외하고, 카드용으로 평탄화해 반환한다.
  */
-export async function getArticles(skip = 0, take: number = PAGE_SIZE): Promise<ArticleCard[]> {
+export async function getArticles(
+  skip = 0,
+  category?: string,
+  take: number = PAGE_SIZE,
+): Promise<ArticleCard[]> {
   const rows = await prisma.article.findMany({
+    where: category ? { feed: { category } } : undefined,
     orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }],
     skip,
     take,
@@ -34,6 +39,17 @@ export async function getArticles(skip = 0, take: number = PAGE_SIZE): Promise<A
     isRead: a.read?.isRead ?? false,
     bookmarked: a.read?.bookmarked ?? false,
   }));
+}
+
+/** 활성 피드에 실제 존재하는 카테고리 목록 (필터 탭용). */
+export async function getCategories(): Promise<string[]> {
+  const rows = await prisma.feed.findMany({
+    where: { active: true, category: { not: null } },
+    select: { category: true },
+    distinct: ['category'],
+    orderBy: { category: 'asc' },
+  });
+  return rows.map((r) => r.category).filter((c): c is string => c != null);
 }
 
 /** 글 상세 (본문 포함 + 피드 + 읽음/북마크 상태). 없으면 null. */

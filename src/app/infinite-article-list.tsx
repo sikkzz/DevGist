@@ -11,7 +11,13 @@ import { loadMoreArticles } from './articles-actions';
  * 초기 묶음을 SSR로 받고, 하단 sentinel이 보이면 Server Action으로 다음 묶음을 이어 붙인다.
  * 반환 개수가 PAGE_SIZE 미만이면 끝으로 간주.
  */
-export function InfiniteArticleList({ initial }: { initial: ArticleCard[] }) {
+export function InfiniteArticleList({
+  initial,
+  category,
+}: {
+  initial: ArticleCard[];
+  category?: string;
+}) {
   const [items, setItems] = useState<ArticleCard[]>(initial);
   const [hasMore, setHasMore] = useState(initial.length === PAGE_SIZE);
   const [isPending, startTransition] = useTransition();
@@ -26,7 +32,7 @@ export function InfiniteArticleList({ initial }: { initial: ArticleCard[] }) {
       (entries) => {
         if (!entries[0].isIntersecting || isPending) return;
         startTransition(async () => {
-          const next = await loadMoreArticles(items.length);
+          const next = await loadMoreArticles(items.length, category);
           setItems((prev) => [...prev, ...next]);
           if (next.length < PAGE_SIZE) setHasMore(false);
         });
@@ -35,7 +41,7 @@ export function InfiniteArticleList({ initial }: { initial: ArticleCard[] }) {
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [hasMore, isPending, items.length]);
+  }, [hasMore, isPending, items.length, category]);
 
   return (
     <>

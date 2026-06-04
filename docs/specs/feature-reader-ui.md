@@ -36,7 +36,7 @@
 ## 5. 비범위 (Out of Scope)
 
 - 읽음/북마크(`Read` 모델) 토글 — 다음 슬라이스.
-- 피드별 필터/카테고리 탭, 검색 — 이후. (무한 스크롤은 후속으로 추가 완료 — Server Action + IntersectionObserver, PAGE_SIZE=30)
+- 피드별(개별 피드) 필터, 검색 — 이후. (후속 완료: 무한 스크롤 — Server Action + IntersectionObserver, PAGE_SIZE=30 / 카테고리 탭 — `?category=` URL 필터, 빅테크·스타트업)
 - 인증 게이트 — 이후 (지금은 noindex로만).
 - 다크모드 정교화, 폰트/타이포 디테일 — 최소만.
 - 피드 등록 UI — 별개.
