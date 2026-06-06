@@ -16,12 +16,7 @@ import { neon } from '@neondatabase/serverless';
 
 const FEEDS = [
   // --- 대기업 / 빅테크 ---
-  {
-    title: '카카오',
-    url: 'https://tech.kakao.com/feed/',
-    siteUrl: 'https://tech.kakao.com',
-    category: 'bigtech',
-  },
+  // (카카오 tech.kakao.com 제외: SPA(JS렌더)라 본문 정적 추출 불가, 요약만 남음)
   {
     title: '네이버 플레이스',
     url: 'https://medium.com/feed/naver-place-dev',
@@ -339,12 +334,6 @@ const FEEDS = [
     category: 'startup',
   },
   {
-    title: '오토피디아(닥터차)',
-    url: 'https://blog.doctor-cha.com/_feather/rss.xml',
-    siteUrl: 'https://blog.doctor-cha.com',
-    category: 'startup',
-  },
-  {
     title: 'MakinaRocks',
     url: 'https://makinarocks.github.io/feed',
     siteUrl: 'https://makinarocks.github.io',
@@ -392,12 +381,7 @@ const FEEDS = [
     siteUrl: 'https://medium.com/uniquegood',
     category: 'startup',
   },
-  {
-    title: '인포그랩',
-    url: 'https://insight.infograb.net/blog/rss.xml',
-    siteUrl: 'https://insight.infograb.net',
-    category: 'startup',
-  },
+  // (인포그랩 제외: SPA(JS렌더)라 본문 정적 추출 불가)
   {
     title: '플라네타리움',
     url: 'https://snack.planetarium.dev/kor/index.xml',

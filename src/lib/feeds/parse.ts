@@ -42,6 +42,15 @@ function toDate(value?: string): Date | undefined {
   return Number.isNaN(d.getTime()) ? undefined : d;
 }
 
+/** 상대경로 링크를 피드 URL 기준 절대경로로 해석 (일부 피드가 /path 형태로 줌). */
+function toAbsolute(rawLink: string, feedUrl: string): string {
+  try {
+    return new URL(rawLink, feedUrl).href;
+  } catch {
+    return rawLink;
+  }
+}
+
 /**
  * 피드 URL을 fetch·파싱해 정규화된 아이템 배열로 반환.
  * guid/link가 없는 아이템은 식별 불가이므로 제외한다.
@@ -51,7 +60,9 @@ export async function parseFeed(url: string): Promise<ParsedFeed> {
 
   const items: ParsedItem[] = [];
   for (const item of feed.items) {
-    const link = item.link?.trim();
+    const rawLink = item.link?.trim();
+    // 상대경로면 절대경로로 (추출 fetch·"원문 보기" 링크가 깨지지 않게)
+    const link = rawLink ? toAbsolute(rawLink, url) : undefined;
     const guid = (item.guid ?? link)?.trim();
     if (!guid || !link) continue; // 식별 불가 → 스킵
 

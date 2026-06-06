@@ -43,9 +43,19 @@ export async function resolveContent(item: ParsedItem): Promise<ResolvedContent>
   return { content: null, contentExtracted: false };
 }
 
+/**
+ * 네이버 블로그(blog.naver.com/{id}/{logNo})는 본문이 iframe(PostView) 안에 있어
+ * 일반 URL을 fetch하면 껍데기(3KB)만 온다 → 실제 본문 페이지(PostView)로 변환.
+ */
+function toFetchUrl(url: string): string {
+  const m = url.match(/^https?:\/\/blog\.naver\.com\/([^/?#]+)\/(\d+)/);
+  return m ? `https://blog.naver.com/PostView.naver?blogId=${m[1]}&logNo=${m[2]}` : url;
+}
+
 async function tryExtract(url: string): Promise<string | null> {
   try {
-    const res = await fetch(url, {
+    const fetchUrl = toFetchUrl(url);
+    const res = await fetch(fetchUrl, {
       headers: { 'User-Agent': USER_AGENT },
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
@@ -54,7 +64,7 @@ async function tryExtract(url: string): Promise<string | null> {
     const html = await res.text();
     // linkedom엔 jsdom의 { url } 옵션이 없어, <base>를 주입해 상대경로 URL을 절대화한다
     // (Readability가 document.baseURI로 이미지/링크를 절대 경로로 보정 — ADR-0001 이미지 보존).
-    const baseTag = `<base href="${url}">`;
+    const baseTag = `<base href="${fetchUrl}">`;
     const withBase = /<head[^>]*>/i.test(html)
       ? html.replace(/<head([^>]*)>/i, `<head$1>${baseTag}`)
       : `${baseTag}${html}`;
