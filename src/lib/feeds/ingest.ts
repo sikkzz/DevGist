@@ -5,6 +5,7 @@ import { cleanText, EXTRACT_CONCURRENCY } from './constants';
 import { mapPool } from './concurrency';
 import { resolveContent } from './extract';
 import type { ParsedItem } from './parse';
+import { getProfile, scorePersonal } from './personalize';
 
 export interface IngestResult {
   /** 새로 적재된 글 수 */
@@ -31,10 +32,13 @@ export async function ingestFeed(feedId: string, items: ParsedItem[]): Promise<I
   const fresh = items.filter((i) => !seen.has(i.guid));
   const preSkipped = items.length - fresh.length;
 
+  const profile = await getProfile(); // 개인화 프로필 (ADR-0009), 없으면 점수 0
+
   // 신규 글만 동시성 제한하에 본문 결정 + INSERT
   const outcomes = await mapPool(fresh, EXTRACT_CONCURRENCY, async (item) => {
     try {
       const { content, contentExtracted } = await resolveContent(item);
+      const personal = scorePersonal(`${item.title} ${item.summary ?? ''}`, profile);
       await prisma.article.create({
         data: {
           feedId,
@@ -51,6 +55,8 @@ export async function ingestFeed(feedId: string, items: ParsedItem[]): Promise<I
             summary: item.summary,
             categories: item.categories,
           }),
+          personalScore: personal.score,
+          personalTags: personal.tags,
           publishedAt: item.publishedAt ?? null,
         },
       });

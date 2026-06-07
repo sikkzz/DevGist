@@ -1,0 +1,26 @@
+{
+  "_comment": "개인화 프로필 예시 (ADR-0009). 복사 → config/profile.local.json 로 채운 뒤 `pnpm seed:profile`. local 파일은 gitignore(회사 정보 비공개).",
+  "companyStack": {
+    "weight": 3,
+    "keywords": ["nestjs", "your-db", "your-cloud", "your-framework"]
+  },
+  "diversify": {
+    "weight": 2,
+    "keywords": ["alternative-lib-a", "alternative-lib-b"]
+  },
+  "learning": [
+    {
+      "key": "infra",
+      "label": "인프라/배포",
+      "weight": 6,
+      "keywords": ["devops", "kubernetes", "배포"]
+    },
+    {
+      "key": "media",
+      "label": "미디어/파일",
+      "weight": 5,
+      "keywords": ["이미지", "스트리밍", "파일"]
+    }
+  ],
+  "todoCues": ["구축기", "도입기", "구현", "실습", "튜토리얼", "개발기"]
+}

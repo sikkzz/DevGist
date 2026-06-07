@@ -1,6 +1,7 @@
 // 글 주제 분류 (ADR-0008) — 무료 규칙 기반 멀티라벨.
 // 제목 + 요약 + 피드 <category> 태그를 합친 텍스트를 주제별 키워드 사전에 매칭.
-// 영어 토큰은 단어 경계 매칭(ai가 main에 안 걸리게), 한글은 부분 문자열 매칭.
+
+import { hasKeyword } from './keyword-match';
 
 /** 주제 키 → 키워드(한/영, 소문자) */
 const TOPIC_KEYWORDS: Record<string, string[]> = {
@@ -301,19 +302,6 @@ const MAX_TOPICS = 3;
 
 /** 고정 주제 키 목록 (탭/필터 기준 순서). 미매칭은 'etc'. */
 export const TOPIC_KEYS = Object.keys(TOPIC_KEYWORDS);
-
-const HANGUL = /[㄰-㆏가-힣]/;
-
-function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function hasKeyword(haystack: string, keyword: string): boolean {
-  if (HANGUL.test(keyword)) return haystack.includes(keyword); // 한글: 부분 문자열
-  // 영어/기호: 단어 경계 매칭 (앞뒤가 영숫자가 아니어야 함)
-  const re = new RegExp(`(^|[^a-z0-9])${escapeRegExp(keyword)}([^a-z0-9]|$)`);
-  return re.test(haystack);
-}
 
 /**
  * 제목/요약/피드태그로부터 주제 멀티라벨을 산출. 매칭 없으면 ['etc'].

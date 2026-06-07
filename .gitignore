@@ -42,3 +42,6 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# 개인화 프로필 (회사 정보 비공개 — ADR-0009)
+config/profile.local.json

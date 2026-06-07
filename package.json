@@ -14,7 +14,8 @@
     "seed:feeds": "node scripts/seed-feeds.mjs",
     "sync:notion": "node scripts/sync-to-notion.mjs",
     "sync:notion:dry": "node scripts/sync-to-notion.mjs --dry-run",
-    "prepare": "husky"
+    "prepare": "husky",
+    "seed:profile": "node scripts/seed-profile.mjs"
   },
   "dependencies": {
     "@mozilla/readability": "^0.6.0",

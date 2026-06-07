@@ -28,7 +28,7 @@ model Feed {
 }
 
 model Article {
-  id               String   @id @default(cuid())
+  id               String    @id @default(cuid())
   feedId           String
   guid             String
   title            String
@@ -36,17 +36,20 @@ model Article {
   author           String?
   summary          String?
   content          String?
-  contentExtracted Boolean  @default(false)
+  contentExtracted Boolean   @default(false)
   thumbnailUrl     String?
-  topics           String[] @default([]) // 주제 태그 (ADR-0008, 규칙 기반 멀티라벨)
+  topics           String[]  @default([]) // 주제 태그 (ADR-0008, 규칙 기반 멀티라벨)
+  personalScore    Int       @default(0) // 개인화 관련도 점수 (ADR-0009)
+  personalTags     String[]  @default([]) // 개인화 태그 (회사·학습·다양화·해볼것)
   publishedAt      DateTime?
-  createdAt        DateTime @default(now())
+  createdAt        DateTime  @default(now())
 
   feed Feed  @relation(fields: [feedId], references: [id], onDelete: Cascade)
   read Read?
 
   @@unique([feedId, guid])
   @@index([publishedAt])
+  @@index([personalScore])
   @@map("articles")
 }
 
@@ -62,4 +65,14 @@ model Read {
   article Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
 
   @@map("reads")
+}
+
+// 개인화 프로필 (ADR-0009) — 단일 행. 회사 스택/학습 우선순위/다양화 키워드 셋(Json).
+// 회사 정보 비공개: gitignore된 config/profile.local.json에서 seed-profile로 upsert.
+model Profile {
+  id        String   @id @default("default")
+  data      Json
+  updatedAt DateTime @updatedAt
+
+  @@map("profile")
 }
