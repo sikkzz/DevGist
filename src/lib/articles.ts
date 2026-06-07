@@ -1,20 +1,28 @@
 import { cache } from 'react';
 
-import { type ArticleCard, PAGE_SIZE } from '@/lib/article-types';
+import { type ArticleCard, PAGE_SIZE, type SortMode } from '@/lib/article-types';
 import { prisma } from '@/lib/prisma';
 
+const LATEST_ORDER = [
+  { publishedAt: { sort: 'desc', nulls: 'last' } },
+  { createdAt: 'desc' },
+] as const;
+
 /**
- * 최신순 글 목록 한 묶음(무한 스크롤용). publishedAt 우선(null은 뒤로), 그다음 createdAt.
- * 본문(content)은 무거우니 목록에선 제외하고, 카드용으로 평탄화해 반환한다.
+ * 글 목록 한 묶음(무한 스크롤용). 본문(content)은 무거우니 제외하고 카드용으로 평탄화.
+ * - latest: 최신순(publishedAt 우선, null 뒤로)
+ * - recommended: 개인화 관련도(personalScore) 내림차순, 동점은 최신순 (ADR-0009)
  */
 export async function getArticles(
   skip = 0,
   topic?: string,
+  sort: SortMode = 'latest',
   take: number = PAGE_SIZE,
 ): Promise<ArticleCard[]> {
   const rows = await prisma.article.findMany({
     where: topic ? { topics: { has: topic } } : undefined,
-    orderBy: [{ publishedAt: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }],
+    orderBy:
+      sort === 'recommended' ? [{ personalScore: 'desc' }, ...LATEST_ORDER] : [...LATEST_ORDER],
     skip,
     take,
     select: {
@@ -25,6 +33,7 @@ export async function getArticles(
       author: true,
       publishedAt: true,
       topics: true,
+      personalTags: true,
       feed: { select: { title: true } },
       read: { select: { isRead: true, bookmarked: true } },
     },
@@ -38,6 +47,7 @@ export async function getArticles(
     publishedAt: a.publishedAt,
     feedTitle: a.feed.title,
     topics: a.topics,
+    personalTags: a.personalTags,
     isRead: a.read?.isRead ?? false,
     bookmarked: a.read?.bookmarked ?? false,
   }));

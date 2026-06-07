@@ -1,9 +1,9 @@
 import Link from 'next/link';
 
-import { TOPIC_LABELS, TOPICS } from '@/lib/article-types';
+import { homeHref, type SortMode, TOPIC_LABELS, TOPICS } from '@/lib/article-types';
 
-/** 전체 + 주제별 필터 탭. URL 쿼리(?topic=)로 상태 유지 (ADR-0008). */
-export function TopicTabs({ active }: { active?: string }) {
+/** 전체 + 주제별 필터 탭. URL 쿼리(?topic=)로 상태 유지, 정렬(sort)은 보존 (ADR-0008). */
+export function TopicTabs({ active, sort }: { active?: string; sort: SortMode }) {
   const tabs = [
     { key: undefined as string | undefined, label: '전체' },
     ...TOPICS.map((t) => ({ key: t, label: TOPIC_LABELS[t] ?? t })),
@@ -16,7 +16,7 @@ export function TopicTabs({ active }: { active?: string }) {
         return (
           <Link
             key={t.key ?? 'all'}
-            href={t.key ? `/?topic=${t.key}` : '/'}
+            href={homeHref(t.key, sort)}
             className={`rounded-full px-3 py-1 text-sm transition-colors ${
               isActive
                 ? 'bg-zinc-900 font-medium text-white dark:bg-zinc-100 dark:text-zinc-900'

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 
-import { type ArticleCard, PAGE_SIZE } from '@/lib/article-types';
+import { type ArticleCard, PAGE_SIZE, type SortMode } from '@/lib/article-types';
 
 import { ArticleItem } from './article-item';
 import { loadMoreArticles } from './articles-actions';
@@ -14,9 +14,11 @@ import { loadMoreArticles } from './articles-actions';
 export function InfiniteArticleList({
   initial,
   topic,
+  sort,
 }: {
   initial: ArticleCard[];
   topic?: string;
+  sort: SortMode;
 }) {
   const [items, setItems] = useState<ArticleCard[]>(initial);
   const [hasMore, setHasMore] = useState(initial.length === PAGE_SIZE);
@@ -32,7 +34,7 @@ export function InfiniteArticleList({
       (entries) => {
         if (!entries[0].isIntersecting || isPending) return;
         startTransition(async () => {
-          const next = await loadMoreArticles(items.length, topic);
+          const next = await loadMoreArticles(items.length, topic, sort);
           setItems((prev) => [...prev, ...next]);
           if (next.length < PAGE_SIZE) setHasMore(false);
         });
@@ -41,7 +43,7 @@ export function InfiniteArticleList({
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [hasMore, isPending, items.length, topic]);
+  }, [hasMore, isPending, items.length, topic, sort]);
 
   return (
     <>
