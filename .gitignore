@@ -45,3 +45,6 @@ next-env.d.ts
 
 # 개인화 프로필 (회사 정보 비공개 — ADR-0009)
 config/profile.local.json
+
+# 로그인 계정 (ADR-0010, 비공개)
+config/account.local.json

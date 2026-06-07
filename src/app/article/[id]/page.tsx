@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { getArticleById } from '@/lib/articles';
+import { requireAuth } from '@/lib/auth';
 import { formatDate } from '@/lib/format';
 import { sanitizeArticleHtml } from '@/lib/sanitize';
 
@@ -12,6 +13,7 @@ import { MarkRead } from './mark-read';
 export const dynamic = 'force-dynamic';
 
 export default async function ArticlePage({ params }: PageProps<'/article/[id]'>) {
+  await requireAuth(); // 미인증이면 /login으로
   const { id } = await params;
   const article = await getArticleById(id);
 

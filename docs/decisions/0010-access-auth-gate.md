@@ -1,4 +1,4 @@
-# ADR-0010: 접근 인증 게이트 — 앱 비밀번호 + Proxy 쿠키
+# ADR-0010: 접근 인증 — DB 계정 로그인 (회원가입 없음)
 
 > **상태**: Accepted
 > **날짜**: 2026-06-07
@@ -13,35 +13,39 @@
 
 1. 모은 글 **본문 전문이 공개**로 노출 (개인 사적 이용 전제가 깨짐 — [ADR-0001] 법적 정당성).
 2. [ADR-0009] 개인화 칩(`회사·nestjs` 등)이 **회사 스택을 공개로 누설**.
-   `noindex`는 검색 비노출일 뿐 **접근 차단이 아니다**. 제약 #3("공개 시 인증 게이트")을 이제 구현해야 한다.
+
+`noindex`는 검색 비노출일 뿐 **접근 차단이 아니다**. 제약 #3("공개 시 인증 게이트")을 구현해야 한다.
 
 ## 결정 (Decision)
 
-**앱 단일 비밀번호 게이트**를 Next.js **Proxy**(구 middleware, Next 16 개명)로 구현.
+**DB 계정(아이디+비번) 로그인** — 회원가입 없음, 본인 1계정. env 시크릿 불필요.
 
-- `src/proxy.ts`: 유효한 auth 쿠키(`da`)가 없으면 `/login`으로 리다이렉트. `login`·`api`·정적자원은 matcher 제외(api는 자체 Bearer 인증 유지).
-- `/login`: 비밀번호 폼 → Server Action이 `APP_PASSWORD` 검증 → 일치 시 httpOnly 쿠키 `da = AUTH_TOKEN`(비밀, 1년) 설정 후 홈.
-- env: `APP_PASSWORD`(입력값) / `AUTH_TOKEN`(쿠키에 담기는 랜덤 시크릿). 둘 다 Vercel env에 설정. fail-closed(토큰 미설정 시 전부 차단).
+- 스키마: `User`(username unique, passwordHash) / `Session`(id=쿠키 토큰, userId, expiresAt). 계정·세션이 DB에 있어 **Vercel env 설정 0**.
+- 계정 시드: gitignore된 `config/account.local.json` → `pnpm seed:account`로 upsert(비번은 scrypt 해시, 의존성 X). 같은 Neon이라 prod에도 즉시 반영.
+- `/login`: 아이디+비번 폼 → Server Action이 DB 대조(scrypt verify) → `Session` 생성 + httpOnly 쿠키 `sid`(1년) → 홈.
+- 게이트 2단(Next 문서 권장 패턴): **Proxy**(`src/proxy.ts`, Next16 middleware→proxy)는 `sid` 쿠키 **존재만** 빠르게 보고 없으면 `/login`(edge, DB 안 씀). **페이지의 `requireAuth()`** 가 실제 세션을 DB로 검증(node) — 위조 쿠키 차단.
+- 로그아웃: 세션 행 삭제 + 쿠키 제거.
 
 ## 이유 / 트레이드오프
 
-- **얻는 것**: 코드 소량으로 공개 접근 차단. 회사 정보·본문 노출 해소. 폰에서 한 번 로그인 → 쿠키로 유지. middleware/쿠키 학습.
-- **포기하는 것**: 단일 비번(다중 사용자/권한 X). Proxy는 "optimistic check"용이라 풀 세션관리는 아님 — 개인용엔 충분. 쿠키 탈취 시 재사용 가능(개인용 수용).
+- **얻는 것**: "진짜 로그인"(계정 관리), **env/Vercel 설정 없음**(DB로 일원화), 폰에서 한 번 로그인 후 쿠키 유지. scrypt/세션/proxy 학습.
+- **포기하는 것**: 페이지마다 `requireAuth()` 호출(보호 페이지 2개라 경미). 단일 계정(다중 사용자 X). 세션 즉시 무효화는 행 삭제로.
 
 ## 검토한 대안
 
-| 대안                            | 장점                        | 단점                            | 결정                 |
-| ------------------------------- | --------------------------- | ------------------------------- | -------------------- |
-| A. 앱 비밀번호 + Proxy 쿠키     | 코드 소량, 폰 UX 좋음, 학습 | 단일 비번                       | **채택**             |
-| B. Vercel Deployment Protection | 코드 0                      | Vercel 로그인에 묶임, 공유 불가 | 보류(즉시 잠금 옵션) |
-| C. 본격 인증(Auth.js 등)        | 다중 사용자/OAuth           | 개인용엔 과함                   | 불필요               |
+| 대안                            | 장점                         | 단점                         | 결정                |
+| ------------------------------- | ---------------------------- | ---------------------------- | ------------------- |
+| A. DB 계정 + 세션 쿠키          | 진짜 로그인, env 0, 본인관리 | 페이지별 requireAuth         | **채택**            |
+| B. env 단일 비밀번호 + 쿠키토큰 | 코드 더 적음                 | env 2개·Vercel 설정 번거로움 | 폐기(사용자 피드백) |
+| C. Vercel Deployment Protection | 코드 0                       | Vercel 로그인 묶임           | 보류                |
+| D. Auth.js 등 본격 인증         | 다중/OAuth                   | 개인용엔 과함                | 불필요              |
 
 ## 결과 / 영향
 
-- `src/proxy.ts`, `src/app/login/(page,actions)`, env 2개.
-- `/api/cron/poll`·`/api/admin/*`는 기존 Bearer 인증 유지(게이트 제외) — GitHub Actions가 쿠키 없이 호출하므로.
-- 배포 시 Vercel env에 `APP_PASSWORD`/`AUTH_TOKEN` 설정 필요.
+- 스키마 `User`/`Session`(+마이그레이션), `src/lib/auth.ts`, `src/proxy.ts`, `src/app/login/(page,actions)`, `logout-action.ts`, `seed-account.mjs`.
+- `/api/cron/poll`·`/api/admin/*`는 Bearer 인증 유지(게이트 제외) — GitHub Actions가 쿠키 없이 호출.
+- **배포 시 env 추가 불필요.** 계정은 `pnpm seed:account` 한 번(같은 DB).
 
 ## 재검토 트리거
 
-- 가족/지인 공유가 필요해지면 → 다중 사용자 인증(C) 검토.
+- 가족/지인 공유가 필요해지면 → 다중 사용자 인증(D) 검토.

@@ -1,5 +1,6 @@
 import { type SortMode } from '@/lib/article-types';
 import { getArticles } from '@/lib/articles';
+import { requireAuth } from '@/lib/auth';
 
 import { InfiniteArticleList } from './infinite-article-list';
 import { SortToggle } from './sort-toggle';
@@ -9,6 +10,7 @@ import { TopicTabs } from './topic-tabs';
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage({ searchParams }: PageProps<'/'>) {
+  await requireAuth(); // 미인증이면 /login으로
   const sp = await searchParams;
   const topic = typeof sp.topic === 'string' ? sp.topic : undefined;
   const sort: SortMode = sp.sort === 'latest' ? 'latest' : 'recommended';

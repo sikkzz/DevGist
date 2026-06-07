@@ -1,0 +1,5 @@
+{
+  "_comment": "로그인 계정 (ADR-0010). 복사 → config/account.local.json 채운 뒤 `pnpm seed:account`. 회원가입 없음, 본인 1계정. local은 gitignore.",
+  "username": "your-id",
+  "password": "your-password"
+}

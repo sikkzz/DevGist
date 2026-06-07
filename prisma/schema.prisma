@@ -76,3 +76,27 @@ model Profile {
 
   @@map("profile")
 }
+
+// 계정 (ADR-0010) — 회원가입 없음, 본인 1계정만 시드. DB로 관리.
+model User {
+  id           String    @id @default(cuid())
+  username     String    @unique
+  passwordHash String
+  createdAt    DateTime  @default(now())
+
+  sessions Session[]
+
+  @@map("users")
+}
+
+// 로그인 세션 — 쿠키(sid)가 이 행의 id를 가리킴. 만료/로그아웃 시 삭제.
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
