@@ -131,7 +131,6 @@ export function ArticleFeed({
               aria-pressed={on}
               className={chipClass(on)}
             >
-              {on && <span aria-hidden>✓ </span>}
               {TOPIC_LABELS[t] ?? t}
             </button>
           );
