@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import Link from 'next/link';
 import './globals.css';
@@ -23,6 +23,17 @@ export const metadata: Metadata = {
   description: '개발자 인사이트 RSS 리더 (개인용)',
   // 개인 이용 기본 — 검색 비노출 (PROJECT_ROOT 제약 3)
   robots: { index: false, follow: false },
+};
+
+// 모바일 네이티브 느낌 — 주소창(theme-color)을 배경과 맞추고, 폼 컨트롤/스크롤바가 다크모드 따르게.
+// width/initial-scale은 Next 기본값(device-width, 1)을 그대로 사용. 확대 잠금(user-scalable=no)은
+// 접근성 안티패턴이라 쓰지 않음 — input 확대는 폰트 16px로 해결(globals.css).
+export const viewport: Viewport = {
+  colorScheme: 'light dark',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#09090b' },
+  ],
 };
 
 // 세션 조회(쿠키+DB)를 Suspense로 분리 — 레이아웃이 navigation을 막지 않게 해

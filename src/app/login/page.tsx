@@ -17,7 +17,7 @@ export default async function LoginPage({ searchParams }: PageProps<'/login'>) {
           required
           autoComplete="username"
           placeholder="아이디"
-          className="rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+          className="rounded-md border border-zinc-300 px-3 py-2 text-base outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
         />
         <input
           type="password"
@@ -25,7 +25,7 @@ export default async function LoginPage({ searchParams }: PageProps<'/login'>) {
           required
           autoComplete="current-password"
           placeholder="비밀번호"
-          className="rounded-md border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+          className="rounded-md border border-zinc-300 px-3 py-2 text-base outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
         />
         {error && <p className="text-sm text-red-600">아이디 또는 비밀번호가 올바르지 않습니다.</p>}
         <button
