@@ -16,15 +16,19 @@ function personalChipClass(tag: string): string {
   return 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400';
 }
 
-/** 목록 카드 1개 (초기 SSR·무한스크롤 추가분 공용 프리젠테이션). */
-export function ArticleItem({ article }: { article: ArticleCard }) {
+/**
+ * 목록 카드 1개 (초기 SSR·무한스크롤 추가분 공용 프리젠테이션).
+ * dim: 읽은 글을 흐리게 표시할지. 기본 true(홈 피드). 보관함 '읽은 글' 뷰처럼
+ * 전부 읽음 상태인 목록에서는 false로 꺼서 전체가 흐려지지 않게 한다.
+ */
+export function ArticleItem({ article, dim = true }: { article: ArticleCard; dim?: boolean }) {
   // 주제(etc 제외) — 다중 주제 선택 시 어떤 주제 글인지 상단에 표기
   const topicChips = article.topics.filter((t) => t !== 'etc');
   return (
     <li>
       <Link
         href={`/article/${article.id}`}
-        className={`group block py-4 ${article.isRead ? 'opacity-55' : ''}`}
+        className={`group block py-4 ${dim && article.isRead ? 'opacity-55' : ''}`}
       >
         {topicChips.length > 0 && (
           <div className="mb-1.5 flex flex-wrap gap-1">

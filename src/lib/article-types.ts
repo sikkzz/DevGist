@@ -47,3 +47,11 @@ export interface ArticleCard {
 /** 목록 정렬 모드. 기본은 개인화 추천순. */
 export type SortMode = 'recommended' | 'latest';
 export const DEFAULT_SORT: SortMode = 'recommended';
+
+/** 보관함 뷰 — 북마크 모음 / 읽은 글 모음. */
+export type LibraryView = 'bookmarks' | 'read';
+export const LIBRARY_VIEWS: { key: LibraryView; label: string }[] = [
+  { key: 'bookmarks', label: '북마크' },
+  { key: 'read', label: '읽은 글' },
+];
+export const DEFAULT_LIBRARY_VIEW: LibraryView = 'bookmarks';
