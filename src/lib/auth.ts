@@ -2,6 +2,7 @@ import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { cache } from 'react';
 
 import { prisma } from '@/lib/prisma';
 
@@ -38,14 +39,14 @@ export async function createSession(userId: string): Promise<void> {
   });
 }
 
-/** 현재 세션의 사용자 (없거나 만료면 null) */
-export async function getSessionUser() {
+/** 현재 세션의 사용자 (없거나 만료면 null). 요청 내 1회로 메모이즈(레이아웃+requireAuth 중복 제거). */
+export const getSessionUser = cache(async () => {
   const sid = (await cookies()).get(COOKIE)?.value;
   if (!sid) return null;
   const session = await prisma.session.findUnique({ where: { id: sid }, include: { user: true } });
   if (!session || session.expiresAt < new Date()) return null;
   return session.user;
-}
+});
 
 /** 보호 페이지 진입점 — 미인증이면 /login으로. */
 export async function requireAuth() {

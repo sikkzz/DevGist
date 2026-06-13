@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import Link from 'next/link';
 import './globals.css';
+import { Suspense } from 'react';
 
 import { getSessionUser } from '@/lib/auth';
 
@@ -24,13 +25,28 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function RootLayout({
+// 세션 조회(쿠키+DB)를 Suspense로 분리 — 레이아웃이 navigation을 막지 않게 해
+// 페이지의 loading.tsx가 즉시 뜨도록 한다.
+async function HeaderAuth() {
+  const user = await getSessionUser();
+  if (!user) return null;
+  return (
+    <form action={logout}>
+      <button
+        type="submit"
+        className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+      >
+        로그아웃
+      </button>
+    </form>
+  );
+}
+
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await getSessionUser();
-
   return (
     <html lang="ko" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
@@ -39,16 +55,9 @@ export default async function RootLayout({
             <Link href="/" className="text-lg font-semibold tracking-tight">
               DevGist
             </Link>
-            {user && (
-              <form action={logout}>
-                <button
-                  type="submit"
-                  className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
-                >
-                  로그아웃
-                </button>
-              </form>
-            )}
+            <Suspense fallback={null}>
+              <HeaderAuth />
+            </Suspense>
           </div>
         </header>
         <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">{children}</main>
