@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { type ArticleCard, TOPIC_LABELS } from '@/lib/article-types';
 import { formatDate } from '@/lib/format';
 
+import { NavPending } from './nav-pending';
+
 /** 개인화 태그 색상 (회사=파랑, 학습=초록, 다양화=보라, 해볼것=강조) */
 function personalChipClass(tag: string): string {
   if (tag.startsWith('회사·'))
@@ -44,6 +46,7 @@ export function ArticleItem({ article }: { article: ArticleCard }) {
             </span>
           )}
           <span>{article.title}</span>
+          <NavPending className="mt-1 shrink-0" />
         </h2>
         {article.summary && (
           <p className="mt-1 line-clamp-2 text-sm text-zinc-500">{article.summary}</p>

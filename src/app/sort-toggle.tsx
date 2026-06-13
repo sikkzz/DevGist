@@ -2,6 +2,8 @@ import Link from 'next/link';
 
 import { homeHref, type SortMode } from '@/lib/article-types';
 
+import { NavPending } from './nav-pending';
+
 /** 추천순(개인화) ↔ 최신순 토글. 현재 topic은 보존 (ADR-0009). */
 export function SortToggle({ topic, active }: { topic?: string; active: SortMode }) {
   const options: { key: SortMode; label: string }[] = [
@@ -15,13 +17,14 @@ export function SortToggle({ topic, active }: { topic?: string; active: SortMode
         <Link
           key={o.key}
           href={homeHref(topic, o.key)}
-          className={
+          className={`inline-flex items-center gap-1 ${
             active === o.key
               ? 'font-semibold text-zinc-900 dark:text-zinc-100'
               : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300'
-          }
+          }`}
         >
           {o.label}
+          <NavPending />
         </Link>
       ))}
     </div>
