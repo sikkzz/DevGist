@@ -10,17 +10,18 @@ const LATEST_ORDER = [
 
 /**
  * 글 목록 한 묶음(무한 스크롤용). 본문(content)은 무거우니 제외하고 카드용으로 평탄화.
+ * - topics: 비면 전체, 여러 개면 그중 하나라도 가진 글(hasSome = OR 합집합)
  * - latest: 최신순(publishedAt 우선, null 뒤로)
  * - recommended: 개인화 관련도(personalScore) 내림차순, 동점은 최신순 (ADR-0009)
  */
 export async function getArticles(
   skip = 0,
-  topic?: string,
+  topics: string[] = [],
   sort: SortMode = 'latest',
   take: number = PAGE_SIZE,
 ): Promise<ArticleCard[]> {
   const rows = await prisma.article.findMany({
-    where: topic ? { topics: { has: topic } } : undefined,
+    where: topics.length > 0 ? { topics: { hasSome: topics } } : undefined,
     orderBy:
       sort === 'recommended' ? [{ personalScore: 'desc' }, ...LATEST_ORDER] : [...LATEST_ORDER],
     skip,

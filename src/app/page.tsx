@@ -10,10 +10,15 @@ export const dynamic = 'force-dynamic';
 export default async function HomePage({ searchParams }: PageProps<'/'>) {
   await requireAuth();
   const sp = await searchParams;
-  const topic = typeof sp.topic === 'string' ? sp.topic : undefined;
+
+  // ?topics=ai,backend (다중) / ?topic=ai (단일 레거시) 모두 지원
+  const raw = sp.topics ?? sp.topic;
+  const topics = (typeof raw === 'string' ? raw.split(',') : Array.isArray(raw) ? raw : [])
+    .map((t) => t.trim())
+    .filter(Boolean);
   const sort: SortMode = sp.sort === 'latest' ? 'latest' : 'recommended';
 
-  const initial = await getArticles(0, topic, sort);
+  const initial = await getArticles(0, topics, sort);
 
-  return <ArticleFeed initial={initial} initialTopic={topic} initialSort={sort} />;
+  return <ArticleFeed initial={initial} initialTopics={topics} initialSort={sort} />;
 }

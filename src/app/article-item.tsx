@@ -18,7 +18,7 @@ function personalChipClass(tag: string): string {
 
 /** 목록 카드 1개 (초기 SSR·무한스크롤 추가분 공용 프리젠테이션). */
 export function ArticleItem({ article }: { article: ArticleCard }) {
-  // 개인화 태그가 있으면 우선 표시, 없으면 주제 칩 (etc 제외)
+  // 주제(etc 제외) — 다중 주제 선택 시 어떤 주제 글인지 상단에 표기
   const topicChips = article.topics.filter((t) => t !== 'etc');
   return (
     <li>
@@ -26,7 +26,19 @@ export function ArticleItem({ article }: { article: ArticleCard }) {
         href={`/article/${article.id}`}
         className={`group block py-4 ${article.isRead ? 'opacity-55' : ''}`}
       >
-        <div className="flex items-center gap-2 text-xs text-zinc-500">
+        {topicChips.length > 0 && (
+          <div className="mb-1.5 flex flex-wrap gap-1">
+            {topicChips.map((t) => (
+              <span
+                key={t}
+                className="rounded bg-zinc-100 px-1.5 py-0.5 text-[11px] font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
+              >
+                {TOPIC_LABELS[t] ?? t}
+              </span>
+            ))}
+          </div>
+        )}
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500">
           <span className="font-medium text-zinc-600 dark:text-zinc-400">{article.feedTitle}</span>
           {article.publishedAt && (
             <>
@@ -48,7 +60,7 @@ export function ArticleItem({ article }: { article: ArticleCard }) {
         {article.summary && (
           <p className="mt-1 line-clamp-2 text-sm text-zinc-500">{article.summary}</p>
         )}
-        {article.personalTags.length > 0 ? (
+        {article.personalTags.length > 0 && (
           <div className="mt-1.5 flex flex-wrap gap-1">
             {article.personalTags.map((t) => (
               <span key={t} className={`rounded px-1.5 py-0.5 text-xs ${personalChipClass(t)}`}>
@@ -56,19 +68,6 @@ export function ArticleItem({ article }: { article: ArticleCard }) {
               </span>
             ))}
           </div>
-        ) : (
-          topicChips.length > 0 && (
-            <div className="mt-1.5 flex flex-wrap gap-1">
-              {topicChips.map((t) => (
-                <span
-                  key={t}
-                  className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
-                >
-                  {TOPIC_LABELS[t] ?? t}
-                </span>
-              ))}
-            </div>
-          )
         )}
       </Link>
     </li>

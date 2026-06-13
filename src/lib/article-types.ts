@@ -47,12 +47,3 @@ export interface ArticleCard {
 /** 목록 정렬 모드. 기본은 개인화 추천순. */
 export type SortMode = 'recommended' | 'latest';
 export const DEFAULT_SORT: SortMode = 'recommended';
-
-/** 홈 URL 빌더 (topic·sort 상태 유지). 기본값은 쿼리에서 생략. */
-export function homeHref(topic?: string, sort: SortMode = DEFAULT_SORT): string {
-  const p = new URLSearchParams();
-  if (topic) p.set('topic', topic);
-  if (sort !== DEFAULT_SORT) p.set('sort', sort);
-  const qs = p.toString();
-  return qs ? `/?${qs}` : '/';
-}

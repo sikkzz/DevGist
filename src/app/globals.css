@@ -23,4 +23,13 @@ body {
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
+/* 가로 스크롤 칩 줄의 스크롤바 숨김 (모바일 카테고리 바) */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* 본문(.article-content) 스타일은 article/[id]/article-content.module.css 로 분리(스코프) */
