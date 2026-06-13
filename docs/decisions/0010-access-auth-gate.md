@@ -3,7 +3,7 @@
 > **상태**: Accepted
 > **날짜**: 2026-06-07
 > **결정자**: @sikkzz (with Claude)
-> **관련 문서**: [PROJECT_ROOT](../PROJECT_ROOT.md), [ADR-0001](./0001-rss-aggregator-direction.md), [ADR-0009](./0009-personalized-ranking.md)
+> **관련 문서**: [ADR-0001](./0001-rss-aggregator-direction.md), [ADR-0009](./0009-personalized-ranking.md)
 
 ---
 
@@ -12,7 +12,7 @@
 배포된 `dev-gist.vercel.app`가 **누구나 URL로 접근 가능**했다. 문제:
 
 1. 모은 글 **본문 전문이 공개**로 노출 (개인 사적 이용 전제가 깨짐 — [ADR-0001] 법적 정당성).
-2. [ADR-0009] 개인화 칩(`회사·nestjs` 등)이 **회사 스택을 공개로 누설**.
+2. [ADR-0009] 개인화 칩(`회사·<스택>` 등)이 **회사 스택을 공개로 누설**.
 
 `noindex`는 검색 비노출일 뿐 **접근 차단이 아니다**. 제약 #3("공개 시 인증 게이트")을 구현해야 한다.
 

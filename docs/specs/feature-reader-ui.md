@@ -31,7 +31,7 @@
 - [ ] `content`가 null인 글(fallback)은 "원문에서 읽기" 링크를 크게 노출한다.
 - [ ] 존재하지 않는 id는 404(notFound).
 - [ ] 모바일 폭에서 본문이 넘치지 않는다(이미지/코드블록/표 가로 스크롤 처리).
-- [ ] **검색 비노출**: `noindex`(robots) — 개인 이용 제약(PROJECT_ROOT 제약 3).
+- [ ] **검색 비노출**: `noindex`(robots) — 개인 이용 제약(제약 3).
 
 ## 5. 비범위 (Out of Scope)
 

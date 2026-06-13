@@ -2,7 +2,7 @@
 
 > **작성일**: YYYY-MM-DD
 > **작성**: Claude (프롬프팅: @sikkzz)
-> **학습 영역**: [PROJECT_ROOT의 6영역 중 어디에 속하는지]
+> **학습 영역**: [학습 영역 중 어디에 속하는지]
 > **관련 문서**: [Spec](../specs/xxx.md), [ADR](../decisions/xxx.md)
 
 ---

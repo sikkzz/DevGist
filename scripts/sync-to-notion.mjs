@@ -72,7 +72,7 @@ const FOLDER_GROUPS = [
 ];
 
 // 단일 파일로 publish할 root 문서
-const ROOT_DOCS = [{ file: 'PROJECT_ROOT.md', title: '🏠 PROJECT_ROOT (북극성)' }];
+const ROOT_DOCS = []; // PROJECT_ROOT.md는 비공개(gitignore)라 publish 제외
 
 // 제외할 폴더 (지금은 publish 안 함)
 const EXCLUDED_FOLDERS = ['templates', 'screens'];

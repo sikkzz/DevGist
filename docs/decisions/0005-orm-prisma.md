@@ -3,7 +3,7 @@
 > **상태**: Accepted
 > **날짜**: 2026-06-03
 > **결정자**: @sikkzz (with Claude)
-> **관련 문서**: [PROJECT_ROOT](../PROJECT_ROOT.md), [ADR-0004](./0004-db-neon.md)
+> **관련 문서**: [ADR-0004](./0004-db-neon.md)
 
 ---
 

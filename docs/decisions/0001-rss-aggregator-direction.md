@@ -3,7 +3,6 @@
 > **상태**: Accepted
 > **날짜**: 2026-06-03
 > **결정자**: @sikkzz (with Claude)
-> **관련 문서**: [PROJECT_ROOT](../PROJECT_ROOT.md)
 
 ---
 

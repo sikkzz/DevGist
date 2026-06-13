@@ -3,7 +3,7 @@
 > **상태**: Accepted
 > **날짜**: 2026-06-03
 > **결정자**: @sikkzz (with Claude)
-> **관련 문서**: [PROJECT_ROOT](../PROJECT_ROOT.md), [ADR-0001](./0001-rss-aggregator-direction.md), [리더 UI Spec](../specs/feature-reader-ui.md)
+> **관련 문서**: [ADR-0001](./0001-rss-aggregator-direction.md), [리더 UI Spec](../specs/feature-reader-ui.md)
 
 ---
 
@@ -40,7 +40,7 @@
 
 - `src/lib/sanitize.ts` 신설, 리더 상세에서 본문 출력 전 통과.
 - `Article.content`는 raw 유지(스키마 변경 없음).
-- 개인 이용 기본([제약 3](../PROJECT_ROOT.md))이라 노출면이 작지만, 공개 전환 시에도 이 정화는 그대로 유효.
+- 개인 이용 기본(제약 3)이라 노출면이 작지만, 공개 전환 시에도 이 정화는 그대로 유효.
 
 ## 재검토 트리거
 
