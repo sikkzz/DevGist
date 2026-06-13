@@ -174,7 +174,7 @@ export function ArticleFeed({
           {entry.hasMore ? (
             <div ref={sentinelRef} className="py-8 text-center text-sm text-zinc-400" />
           ) : (
-            <p className="py-8 text-center text-sm text-zinc-400">— 끝 —</p>
+            <div className="py-4" />
           )}
         </>
       )}

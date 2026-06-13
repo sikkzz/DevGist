@@ -6,6 +6,7 @@ import { Suspense } from 'react';
 
 import { getSessionUser } from '@/lib/auth';
 
+import { BottomNav } from './bottom-nav';
 import { logout } from './logout-action';
 
 const geistSans = Geist({
@@ -71,7 +72,11 @@ export default function RootLayout({
             </Suspense>
           </div>
         </header>
-        <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6">{children}</main>
+        {/* 하단 탭바 높이 + iOS safe-area 만큼 본문 하단 여백 — 마지막 카드가 바에 가리지 않게 */}
+        <main className="mx-auto w-full max-w-3xl flex-1 px-4 pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))]">
+          {children}
+        </main>
+        <BottomNav />
       </body>
     </html>
   );
