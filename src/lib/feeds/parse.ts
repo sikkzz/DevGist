@@ -29,7 +29,9 @@ export interface ParsedFeed {
 
 const parser = new Parser<Record<string, unknown>, CustomItem>({
   timeout: FETCH_TIMEOUT_MS,
-  headers: { 'User-Agent': USER_AGENT },
+  // Accept를 명시(*/*)하지 않으면 rss-parser 기본 Accept를 일부 서버(예: 네이버 D2)가
+  // 406(Not Acceptable)으로 거부한다. UA와 무관 — 정직 UA는 그대로 유지.
+  headers: { 'User-Agent': USER_AGENT, Accept: '*/*' },
   customFields: {
     // RSS의 <content:encoded>를 contentEncoded로 매핑 (rss-parser 기본 content 매핑과 별개로 명시 확보)
     item: [['content:encoded', 'contentEncoded']],

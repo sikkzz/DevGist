@@ -6,7 +6,9 @@
 // 전부 fetch 검증 완료(awesome-devblog db_community.yml 등 큐레이션 기반).
 // 정직한 UA로 접근 가능한 공개 RSS만 — 차단 피드는 존중해 제외:
 //   403(봇 차단): 우아한형제들 신블로그(woowabros 구블로그는 사용)·컬리
-//   406(UA 거부): 네이버 D2·G마켓·GS Retail (브라우저 UA면 가능하나 정직 UA 유지 방침상 제외)
+//   406(Accept 헤더 거부): G마켓·GS Retail (parser에 Accept:*/* 추가로 해결 가능 — 미검증이라 보류)
+//   ※ 네이버 D2도 같은 406이었으나 원인은 UA가 아닌 Accept 헤더였음. parse.ts에 Accept:*/*
+//     추가로 정직 UA 그대로 수집됨 → 포함(첫 설계의 'UA 거부' 진단은 오귀인이었다)
 // (카카오뱅크는 /rss는 403이나 카테고리 index.xml로 수집 가능 → 포함)
 
 import 'dotenv/config';
@@ -27,6 +29,12 @@ const FEEDS = [
     title: '네이버 클라우드 플랫폼',
     url: 'https://rss.blog.naver.com/n_cloudplatform.xml',
     siteUrl: 'https://blog.naver.com/n_cloudplatform',
+    category: 'bigtech',
+  },
+  {
+    title: '네이버 D2',
+    url: 'https://d2.naver.com/d2.atom',
+    siteUrl: 'https://d2.naver.com',
     category: 'bigtech',
   },
   {
