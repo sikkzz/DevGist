@@ -6,6 +6,7 @@ import { mapPool } from './concurrency';
 import { resolveContent } from './extract';
 import type { ParsedItem } from './parse';
 import { getProfile, scorePersonal } from './personalize';
+import { htmlToSearchText } from './plain-text';
 
 export interface IngestResult {
   /** 새로 적재된 글 수 */
@@ -49,6 +50,8 @@ export async function ingestFeed(feedId: string, items: ParsedItem[]): Promise<I
           author: cleanText(item.author),
           summary: cleanText(item.summary),
           content: cleanText(content),
+          // 검색 색인용 평문 — 본문에서 HTML/CSS 제거 (ADR-0011). content 정제 후 기준.
+          searchText: cleanText(htmlToSearchText(content)),
           contentExtracted,
           topics: classifyTopics({
             title: item.title,

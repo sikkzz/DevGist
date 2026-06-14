@@ -36,6 +36,7 @@ model Article {
   author           String?
   summary          String?
   content          String?
+  searchText       String? // 검색 색인용 평문(HTML/CSS 제거), FTS GIN 인덱스 대상 (ADR-0011)
   contentExtracted Boolean   @default(false)
   thumbnailUrl     String?
   topics           String[]  @default([]) // 주제 태그 (ADR-0008, 규칙 기반 멀티라벨)

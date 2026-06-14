@@ -17,8 +17,11 @@ export default async function HomePage({ searchParams }: PageProps<'/'>) {
     .map((t) => t.trim())
     .filter(Boolean);
   const sort: SortMode = sp.sort === 'latest' ? 'latest' : 'recommended';
+  const query = typeof sp.q === 'string' ? sp.q : '';
 
-  const initial = await getArticles(0, topics, sort);
+  const initial = await getArticles(0, topics, sort, query);
 
-  return <ArticleFeed initial={initial} initialTopics={topics} initialSort={sort} />;
+  return (
+    <ArticleFeed initial={initial} initialTopics={topics} initialSort={sort} initialQuery={query} />
+  );
 }

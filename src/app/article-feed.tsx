@@ -14,23 +14,31 @@ import {
 import { ArticleItem } from './article-item';
 import { loadMoreArticles } from './articles-actions';
 
-// (topics,sort)별 캐시 — 클라이언트에서 필터/정렬을 즉시 전환하고, 이미 본 조합은 재요청 없이 표시.
+const SEARCH_DEBOUNCE_MS = 300;
+
+// (topics,sort,query)별 캐시 — 세 필터를 즉시 전환하고, 이미 본 조합은 재요청 없이 표시.
+// 셋은 모두 AND로 결합되는 독립 필터라, 어떤 순서로 바꿔도 같은 키 체계로 다뤄진다.
 type CacheEntry = { items: ArticleCard[]; hasMore: boolean };
-const keyOf = (topics: string[], sort: SortMode) => `${[...topics].sort().join(',')}|${sort}`;
+const keyOf = (topics: string[], sort: SortMode, query: string) =>
+  `${[...topics].sort().join(',')}|${sort}|${query.trim().toLowerCase()}`;
 
 export function ArticleFeed({
   initial,
   initialTopics,
   initialSort,
+  initialQuery,
 }: {
   initial: ArticleCard[];
   initialTopics: string[];
   initialSort: SortMode;
+  initialQuery: string;
 }) {
   const [topics, setTopics] = useState<string[]>(initialTopics);
   const [sort, setSort] = useState<SortMode>(initialSort);
+  const [queryInput, setQueryInput] = useState(initialQuery); // 입력 즉시값
+  const [query, setQuery] = useState(initialQuery); // 디바운스된 실제 검색어
   const [cache, setCache] = useState<Record<string, CacheEntry>>(() => ({
-    [keyOf(initialTopics, initialSort)]: {
+    [keyOf(initialTopics, initialSort, initialQuery)]: {
       items: initial,
       hasMore: initial.length === PAGE_SIZE,
     },
@@ -38,32 +46,43 @@ export function ArticleFeed({
   const [, startTransition] = useTransition();
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const k = keyOf(topics, sort);
+  const k = keyOf(topics, sort, query);
   const entry = cache[k]; // undefined면 아직 미로드 → 스켈레톤
 
-  // 캐시에 없는 (topics,sort) → 첫 묶음 로드
+  // 검색어 디바운스 — 입력이 멈추고 300ms 뒤 query 확정 + 최상단으로
+  useEffect(() => {
+    if (queryInput === query) return;
+    const timer = setTimeout(() => {
+      setQuery(queryInput);
+      window.scrollTo({ top: 0 });
+    }, SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [queryInput, query]);
+
+  // 캐시에 없는 (topics,sort,query) → 첫 묶음 로드
   useEffect(() => {
     if (cache[k]) return;
     let cancelled = false;
-    loadMoreArticles(0, topics, sort).then((items) => {
+    loadMoreArticles(0, topics, sort, query).then((items) => {
       if (cancelled) return;
       setCache((c) => ({ ...c, [k]: { items, hasMore: items.length === PAGE_SIZE } }));
     });
     return () => {
       cancelled = true;
     };
-  }, [k, topics, sort, cache]);
+  }, [k, topics, sort, query, cache]);
 
   // URL 동기화 (서버 navigation 없이 — 공유/새로고침 대비)
   useEffect(() => {
     const qs = new URLSearchParams();
     if (topics.length > 0) qs.set('topics', topics.join(','));
     if (sort !== DEFAULT_SORT) qs.set('sort', sort);
+    if (query.trim()) qs.set('q', query.trim());
     const url = qs.toString() ? `/?${qs.toString()}` : '/';
     window.history.replaceState(null, '', url);
-  }, [topics, sort]);
+  }, [topics, sort, query]);
 
-  // 무한 스크롤 — 현재 (topics,sort)에 이어 붙임
+  // 무한 스크롤 — 현재 (topics,sort,query)에 이어 붙임
   useEffect(() => {
     if (!entry?.hasMore) return;
     const el = sentinelRef.current;
@@ -74,7 +93,7 @@ export function ArticleFeed({
         startTransition(async () => {
           const cur = cache[k];
           if (!cur?.hasMore) return;
-          const next = await loadMoreArticles(cur.items.length, topics, sort);
+          const next = await loadMoreArticles(cur.items.length, topics, sort, query);
           setCache((c) => {
             const base = c[k] ?? { items: [], hasMore: true };
             return {
@@ -88,7 +107,7 @@ export function ArticleFeed({
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [k, entry?.hasMore, cache, topics, sort]);
+  }, [k, entry?.hasMore, cache, topics, sort, query]);
 
   // 주제 토글 (다중 선택) — 바꾸면 새 필터 결과를 위에서부터 보도록 최상단으로 스크롤.
   const toggleTopic = useCallback((key: string) => {
@@ -107,8 +126,23 @@ export function ArticleFeed({
     { key: 'latest', label: '최신순' },
   ];
 
+  const emptyMessage = query.trim()
+    ? `‘${query.trim()}’ 검색 결과가 없습니다.`
+    : topics.length > 0
+      ? '선택한 주제에 글이 없습니다.'
+      : '아직 수집된 글이 없습니다.';
+
   return (
     <>
+      {/* 검색 — 주제칩·정렬과 AND로 결합되는 또 하나의 필터. 비면 무시(평소 피드). */}
+      <input
+        type="search"
+        value={queryInput}
+        onChange={(e) => setQueryInput(e.target.value)}
+        placeholder="제목 검색"
+        className="mb-3 w-full rounded-lg border border-zinc-300 px-4 py-2 text-base outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900"
+      />
+
       {/* 주제 칩만 상단 고정 — 헤더(h-14, top-0) 바로 밑(top-14)에 스택.
           -mx-4로 main 좌우 패딩 상쇄해 가로 full-bleed, 반투명 blur로 목록이 밑으로 깔끔히 지나가게.
           모바일: 한 줄 가로 스크롤(스크롤바 숨김). */}
@@ -161,9 +195,7 @@ export function ArticleFeed({
       {!entry ? (
         <ListSkeleton />
       ) : entry.items.length === 0 ? (
-        <p className="py-16 text-center text-zinc-500">
-          {topics.length > 0 ? '선택한 주제에 글이 없습니다.' : '아직 수집된 글이 없습니다.'}
-        </p>
+        <p className="py-16 text-center text-zinc-500">{emptyMessage}</p>
       ) : (
         <>
           <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
